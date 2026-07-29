@@ -57,7 +57,7 @@ Follow these instructions to set up the project locally.
 ### Prerequisites
 
 - **Node.js** (v18 or higher)
-- **Python** (v3.8 or higher)
+- **Python** (v3.8 - v3.11)
 - **TMDB API Key** (Get one for free [here](https://www.themoviedb.org/settings/api))
 
 ### 1. Clone the Repository
