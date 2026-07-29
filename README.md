@@ -1,7 +1,7 @@
 <div align="center">
   <h1>🎬 FilmSense</h1>
   <p><strong>A dynamic, content-based movie recommendation engine built with React and Python.</strong></p>
-  <p>🚀 <strong><a href="https://filmsense.onrender.com">Live Demo</a></strong></p>
+  <p>🚀 <strong><a href="https://filmsense-jade.vercel.app">Live Demo</a></strong></p>
   
   [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](#)
   [![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)](#)
@@ -22,32 +22,31 @@ FilmSense is a full-stack web application that intelligently suggests movies bas
 - **Smart Recommendations:** Leverages TF-IDF vectorization and K-Nearest Neighbors (KNN) to generate accurate, content-based movie recommendations.
 - **Beautiful UI:** A responsive, visually striking frontend crafted with React, Vite, and Tailwind CSS.
 - **Lightning Fast API:** A robust backend powered by FastAPI that serves predictions rapidly.
-- **Rich Data Processing:** Incorporates NLTK for text stemming and scikit-learn for machine learning pipelines.
+- **Rich Data Processing:** Uses scikit-learn for TF-IDF vectorization and KNN-based similarity search.
 
 ## 📂 Project Structure
 
 ```text
 FilmSense/
 ├── backend/
-│   ├── main.py                   # FastAPI application & ML pipeline
-│   └── requirements.txt          # Python dependencies
+│   ├── data/
+│   │   └── 50K_Movies.csv            # Pre-cleaned, lightweight dataset
+│   ├── main.py                       # FastAPI application & ML pipeline
+│   └── requirements.txt              # Python dependencies
 ├── frontend/
-│   ├── public/                   # Static assets (favicon)
+│   ├── public/                       # Static assets (favicon)
 │   ├── src/
-│   │   ├── components/           # Reusable React components
-│   │   ├── lib/                  # Helper functions & API utilities
-│   │   ├── styles/               # Global styling (Tailwind CSS v4)
-│   │   ├── App.jsx               # Main application component
-│   │   └── main.jsx              # React application entry point
-│   ├── .env.example              # Environment variables template
-│   ├── index.html                # HTML entry point
-│   ├── package.json              # Frontend dependencies
-│   └── vite.config.js            # Vite configuration
-├── data/
-│   └── 50K_Movies.csv            # Pre-cleaned, lightweight dataset
+│   │   ├── components/               # Reusable React components
+│   │   ├── lib/                      # Helper functions & API utilities
+│   │   ├── styles/                   # Global styling (Tailwind CSS v4)
+│   │   ├── App.jsx                   # Main application component
+│   │   └── main.jsx                  # React application entry point
+│   ├── .env.example                  # Environment variables template
+│   ├── index.html                    # HTML entry point
+│   ├── package.json                  # Frontend dependencies
+│   └── vite.config.js                # Vite configuration
 ├── .gitignore
-├── package.json                  # Root monorepo scripts
-├── render.yaml                   # Render deployment blueprint
+├── package.json                      # Root monorepo scripts
 └── README.md
 ```
 
@@ -65,12 +64,12 @@ Follow these instructions to set up the project locally.
 
 ```bash
 git clone https://github.com/punyaarora2811/filmsense.git
-cd FilmSense
+cd filmsense
 ```
 
 ### 2. Dataset
 
-The repository already includes the `50K_Movies.csv` in the `data/` directory. It contains the top 50,000 highest-rated movies with pre-computed features for lightning-fast ML modeling. No extra downloads needed!
+The repository already includes the `50K_Movies.csv` in the `backend/data/` directory. It contains the top 50,000 highest-rated movies with pre-computed features for lightning-fast ML modeling. No extra downloads needed!
 
 ### 3. Backend Setup (FastAPI & ML)
 
@@ -92,8 +91,9 @@ Configure the environment variables and start the frontend application.
 # Set up your environment variables
 cp frontend/.env.example frontend/.env
 
-# Edit frontend/.env and add your TMDB API Key:
+# Edit frontend/.env and add your keys:
 # VITE_TMDB_API_KEY=your_api_key_here
+# VITE_API_URL=http://127.0.0.1:8000
 
 # Install dependencies and start the dev server
 npm run install:frontend
@@ -109,46 +109,37 @@ To run lightning-fast on the free tier, the pipeline is split into an offline pr
 ### 1. Offline Preprocessing (Already done)
 1. **Data Cleaning:** The raw 400K TMDB dataset is filtered to remove empty rows and kept only to the top 50,000 movies by rating to save memory.
 2. **Feature Extraction:** Genres, keywords, cast, and directors are merged into lists. Multi-word names are collapsed (e.g., `Tom Hanks` → `TomHanks`) to prevent false positive matches.
-3. **Text Normalization:** Applies Porter stemming to the movie overviews using NLTK so that word variations map to the same token.
-4. **Weighted Tagging:** Constructs a master "tag" string for each movie where directors and genres are weighted 3×, keywords 2×, and overview/cast 1×.
+3. **Weighted Tagging:** Constructs a master "tag" string for each movie where directors and genres are weighted 3×, keywords 2×, and overview/cast 1×.
 
 ### 2. Runtime (FastAPI Server)
 1. **Vectorization:** Upon startup, the backend instantly converts the pre-computed tags into a numerical matrix using TF-IDF (Term Frequency-Inverse Document Frequency).
 2. **Recommendation:** When you search for a movie, the server computes the closest neighbors via Cosine Similarity utilizing the K-Nearest Neighbors (KNN) algorithm and returns the top 10 results in milliseconds.
 
-## 🚀 Deployment (Render)
+## 🚀 Deployment
 
-Deploy the frontend and backend separately on [Render](https://render.com) — no credit card required.
+FilmSense is deployed with the frontend on [Vercel](https://vercel.com) and the backend on [Railway](https://railway.app).
 
-### 1. Backend (Web Service)
+### 1. Backend (Railway)
 
-1. Sign in to Render and click **New +** → **Web Service**.
-2. Connect your GitHub repository and configure:
+1. Go to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo** → select **filmsense**
+2. Configure under **Settings → Build & Deploy**:
    | Field | Value |
    |---|---|
-   | **Name** | `filmsense-backend` |
-   | **Environment** | `Python 3` |
-   | **Region** | Singapore (or closest to you) |
-   | **Build Command** | `pip install -r backend/requirements.txt` |
-   | **Start Command** | `cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT` |
-   | **Instance Type** | Free |
-3. Click **Create Web Service** and wait for the build to finish. Copy the live URL (e.g. `https://filmsense-backend-xxxx.onrender.com`).
+   | **Root Directory** | `backend` |
+   | **Build Command** | `pip install -r requirements.txt` |
+   | **Start Command** | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
+3. Go to **Settings → Networking** → **Generate Domain** and copy the URL.
 
-### 2. Frontend (Static Site)
+### 2. Frontend (Vercel)
 
-1. Click **New +** → **Static Site**.
-2. Connect the same repository and configure:
-   | Field | Value |
-   |---|---|
-   | **Name** | `filmsense` |
-   | **Build Command** | `npm install --prefix frontend && npm run build --prefix frontend` |
-   | **Publish Directory** | `frontend/dist` |
-3. Add the following environment variables:
+1. Go to [vercel.com](https://vercel.com) → **Add New** → **Project** → import **filmsense**
+2. Set **Framework Preset** to `Vite` and **Root Directory** to `frontend`
+3. Add environment variables:
    | Key | Value |
    |---|---|
-   | `VITE_API_URL` | The backend URL you copied above |
+   | `VITE_API_URL` | Your Railway backend URL |
    | `VITE_TMDB_API_KEY` | Your TMDB API key |
-4. Click **Create Static Site**.
+4. Click **Deploy**.
 
 ## 📄 License
 

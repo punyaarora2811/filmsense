@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # ── FastAPI Setup ──────────────────────────────────────────────────────────────
 
-app = FastAPI()
+app = FastAPI(title="FilmSense API")
 
 # Allow cross-origin requests so the frontend can call this API from any domain
 app.add_middleware(
@@ -18,13 +18,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Health Check / Root Endpoints ──────────────────────────────────────────────
+
+@app.get("/")
+def root():
+    return {"status": "ok", "message": "FilmSense API is running"}
+
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
+
 # ── Data Loading ──────────────────────────────────────────────────────────────
 
 print("Loading pre-cleaned dataset...")
 
 # Dynamically find path relative to this script so it works from any directory
 base_dir = os.path.dirname(os.path.abspath(__file__))
-dataset_path = os.path.join(base_dir, '../data/50K_Movies.csv')
+dataset_path = os.path.join(base_dir, 'data', '50K_Movies.csv')
+
+if not os.path.exists(dataset_path):
+    raise FileNotFoundError(f"Dataset file not found at: {dataset_path}")
 
 # Load the pre-processed dataset which already has the 'tags' column built
 movies = pd.read_csv(
@@ -59,7 +72,7 @@ nn = NearestNeighbors(
     algorithm='brute'
 )
 nn.fit(vectors)
-print(f"Backend ready. Extremely memory-optimized.")
+print("Backend ready. Extremely memory-optimized.")
 
 # ── API Endpoint ──────────────────────────────────────────────────────────────
 
@@ -67,9 +80,16 @@ print(f"Backend ready. Extremely memory-optimized.")
 def recommend(query: str):
     """Accept a movie title and return 10 similar movies based on content similarity."""
 
+    if not query or not query.strip():
+        raise HTTPException(status_code=400, detail="Query parameter cannot be empty")
+
     # Case-insensitive title lookup
-    match = movies[movies['title'].str.lower() == query.lower()]
+    match = movies[movies['title'].str.lower() == query.strip().lower()]
     
+    if match.empty:
+        # Fallback search for partial match if exact match fails
+        match = movies[movies['title'].str.lower().str.contains(query.strip().lower(), regex=False)]
+        
     if match.empty:
         raise HTTPException(status_code=404, detail="Movie not found")
         
@@ -84,8 +104,9 @@ def recommend(query: str):
     for i in indices[0][1:]:
         row = movies.iloc[i]
         poster_url = ""
-        if row['poster_path'] and pd.notna(row['poster_path']):
-            poster_url = f"https://image.tmdb.org/t/p/w500{row['poster_path']}"
+        poster_path = row.get('poster_path')
+        if pd.notna(poster_path) and str(poster_path).strip() and str(poster_path) != "nan":
+            poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
             
         try:
             rating = float(row['vote_average'])
