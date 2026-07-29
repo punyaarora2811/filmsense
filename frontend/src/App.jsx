@@ -86,7 +86,7 @@ export default function App() {
               className="text-3xl text-white uppercase"
               style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '0.14em' }}
             >
-              Cinexus
+              FilmSense
             </span>
           </div>
           <p className="absolute right-10 text-gray-500 text-xs tracking-widest uppercase">
@@ -198,7 +198,7 @@ export default function App() {
               className="text-gray-600 text-xs tracking-widest uppercase"
               style={{ fontFamily: "'Bebas Neue', sans-serif" }}
             >
-              Cinexus © 2025
+              FilmSense © 2025
             </span>
             <span className="text-gray-700 text-xs">Powered by TMDB</span>
           </div>
