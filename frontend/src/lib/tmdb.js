@@ -24,7 +24,8 @@ export async function fetchPopular() {
 // Send a movie title to the FastAPI backend and return 10 content-based recommendations
 export async function fetchRecommendations(query) {
   try {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+    const rawUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+    const apiUrl = rawUrl.replace(/\/$/, '');
     const res = await fetch(`${apiUrl}/api/recommend?query=${encodeURIComponent(query)}`);
     if (!res.ok) {
       if (res.status === 404) return null; // Movie not found
