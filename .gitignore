@@ -1,0 +1,39 @@
+# Prevent accidentally pushing large datasets, but allow our clean file
+*.csv
+*.tsv
+!data/50K_Movies.csv
+
+# Jupyter artifacts
+.ipynb_checkpoints/
+__pycache__/
+
+# Python & Environment vars
+venv/
+env/
+**/.env
+**/.env.*
+!**/.env.example
+
+# Dependencies & build output
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+*.log
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Gemini
+.gemini/
